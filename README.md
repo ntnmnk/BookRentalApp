@@ -1,4 +1,4 @@
-# RentRead
+# BookRentalApp
 
 RentRead is a RESTful API service developed using Spring Boot to manage an online book rental system. It allows users to register, login, browse books, rent books, return books, and manage user accounts. This document provides an overview of the application, its features, setup instructions, and other relevant information.
 
@@ -9,7 +9,7 @@ To run this application locally, follow these steps:
 1. Clone this repository:
 
    ```bash
-   git clone https://github.com/harsh8999/RentRead.git
+   git clone https://
    ```
 
 2. Build the application using Maven:
