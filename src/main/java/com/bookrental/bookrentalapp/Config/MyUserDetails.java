@@ -1,8 +1,12 @@
 package com.bookrental.bookrentalapp.Config;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.bookrental.bookrentalapp.Models.User;
@@ -11,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 @Data
-public class CustomUserDetailsService implements UserDetails {
+public class MyUserDetails implements UserDetails {
     
 
     private static final long serialVersionUID = 1L;
@@ -25,7 +29,7 @@ public class CustomUserDetailsService implements UserDetails {
     @JsonIgnore
     private String password;
      
-    private Collection<? extends GrantedAuthority> authorities;
+    private List<GrantedAuthority>  authorities;
 
     // public static CustomUserDetailsService build(User user) {
     //     return CustomUserDetailsService
@@ -37,11 +41,15 @@ public class CustomUserDetailsService implements UserDetails {
     // }
 
   
-    public CustomUserDetailsService(User user) {
+    public MyUserDetails(User user) {
         this.id = user.getId();
         this.username = user.getUserName();
         this.email = user.getEmail();
         this.password = user.getPassword();
+        this.authorities = user.getRoles().stream().
+        map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
+
+        .collect(Collectors.toList());
     }
   
     

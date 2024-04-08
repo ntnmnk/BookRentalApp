@@ -34,7 +34,7 @@ public class Rental {
     @JoinColumn(name = "book_id")
     private Book book;
     
-    @Column(nullable = false)
+    // @Column(nullable = false)
     private LocalDate rentalDate;
     
     private LocalDate returnDate;

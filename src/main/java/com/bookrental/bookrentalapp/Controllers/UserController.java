@@ -21,7 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.bookrental.bookrentalapp.Config.UserDetailsServiceImpl;
 import com.bookrental.bookrentalapp.Exceptions.DuplicateResourceException;
+import com.bookrental.bookrentalapp.Exceptions.UserNotFoundException;
 import com.bookrental.bookrentalapp.Models.User;
+import com.bookrental.bookrentalapp.Services.SignUpUserDto;
 import com.bookrental.bookrentalapp.Services.UserService;
 
 import org.springframework.security.authentication.AuthenticationManager;
@@ -43,24 +45,33 @@ public class UserController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+    
+    //api/users/message  api/users/message
+    @PostMapping("/ok")
+    public ResponseEntity<?> getmessage() {
+       return ResponseEntity.ok().body("Welcome");
+    }
 
 
-     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody User user) {
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser( @RequestBody User user) {
         try {
             logger.info("Received request to register user: {}", user.getEmail());
             User newUser = userService.registerUser(user);
             logger.info("User registered successfully: {}", newUser.getEmail());
-            return new ResponseEntity<>(newUser, HttpStatus.CREATED);
+            return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
         } catch (DuplicateResourceException e) {
             logger.error("Failed to register user: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("User with this email already exists");
         } catch (Exception e) {
             logger.error("An unexpected error occurred while registering user", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("User already exists");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to register user");
         }
     }
-    @GetMapping("/u/{userName}")
+
+
+
+    @GetMapping("/username/{userName}")
     public ResponseEntity<?> getUserByUserName(@PathVariable String userName) {
         Optional<User> userOptional = userService.findByUserName(userName);
         if (userOptional.isPresent()) {
@@ -72,13 +83,30 @@ public class UserController {
 
 
 
-    @GetMapping
-    public ResponseEntity<List<?>> getAllUsers() {
-        logger.info("Received request to get all users.");
-        List<User> users = userService.getAllUsers();
-        logger.info("Returning {} users.", users.size());
-        return new ResponseEntity<>(users, HttpStatus.OK);
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllUsers() {
+        try {
+            logger.info("Received request to get all users.");
+            List<User> users = userService.getAllUsers();
+            if (users.isEmpty()|| users==null) {
+                logger.info("No users found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Users not found");
+            }
+            logger.info("Returning {} users.", users.size());
+            return ResponseEntity.ok(users);
+        }  catch (UserNotFoundException e) {
+            logger.info("User not found.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Users not found");
+        }
+        catch (Exception e) {
+            logger.error("Error occurred while retrieving users: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to retrieve users");
+        }
     }
+
+
+    
+
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
@@ -102,14 +130,14 @@ public class UserController {
         }
 
     }
-        @GetMapping("/name/{userId}")
-        public ResponseEntity<User> getUserById(@PathVariable Long userId) {
+        @GetMapping("/{userId}")
+        public ResponseEntity<?> getUserById(@PathVariable String userId) {
             try {
-                User user = userService.getUserById(userId);
-                return ResponseEntity.ok(user);
+                Optional<User> user = userService.findByUserName(userId);
+                return ResponseEntity.ok(user.get());
             } catch (ResourceNotFoundException ex) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                                     .body(null); // or any error message you prefer
+                                     .body("not found"); // or any error message you prefer
             }
         }
     

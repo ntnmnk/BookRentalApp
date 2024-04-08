@@ -23,14 +23,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Book {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
     
     private String ISBN;
 
     private String title;
     
-    
+
     private String author;
     
     private String genre;

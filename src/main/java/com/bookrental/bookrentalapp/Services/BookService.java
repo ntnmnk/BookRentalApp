@@ -1,6 +1,8 @@
 package com.bookrental.bookrentalapp.Services;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -64,9 +66,11 @@ public class BookService {
             // Rent the book
             if (book.getAvailabilityStatus() == AvailabilityStatus.AVAILABLE) {
                 Rental rental = new Rental(user, book);
+                rental.setRentalDate(LocalDate.now());
                 book.setAvailabilityStatus(AvailabilityStatus.RENTED);
                 book.getRentals().add(rental);
                 user.getRentals().add(rental);
+                user.setActiveRentals(user.getActiveRentals()+(3-2));
                 // Save changes to the database
                 bookRepository.save(book);
                 userRepository.save(user);
@@ -79,25 +83,46 @@ public class BookService {
             logger.error("User ID is null");
             throw new IllegalArgumentException("User ID cannot be null");
         }
+        
+    }
+
+    public Book findBooksByName(String title) {
+        return bookRepository.findBytitle(title);
+    }
+
+
+    public  Optional <Book> getBookById(Long id) {
+        logger.info("Fetching book with id: " + id);
+        return bookRepository.findById(id);
     }
 
 
     
 
+
     public void returnBook(Long bookId, Long userId) {
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new BookNotFoundException("Book not found with id: " + bookId));
+        Optional<Book> bookOptional   = bookRepository.findById(bookId);
+
+                if (bookOptional.isPresent()) {
+                    Book book = bookOptional.get();
         
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
-
-        // Return the book
-        book.setAvailabilityStatus(AvailabilityStatus.AVAILABLE);
-        bookRepository.save(book);
-
-        // Update user's active rentals count
-        user.setActiveRentals(user.getActiveRentals() - 1);
-        userRepository.save(user);
-    }
-
+                    Optional<User> userOptional = userRepository.findById(userId);
+                    if (userOptional.isPresent()) {
+                        User user = userOptional.get();
+        
+                        // Return the book
+                        book.setAvailabilityStatus(AvailabilityStatus.AVAILABLE);
+                        bookRepository.save(book);
+        
+                        // Update user's active rentals count
+                        user.setActiveRentals(user.getActiveRentals() - 1);
+                        userRepository.save(user);
+                    } else {
+                        throw new UserNotFoundException("User not found with id: " + userId);
+                    }
+                } else {
+                    throw new BookNotFoundException("Book not found with id: " + bookId);
+                }
+            }
 }
+

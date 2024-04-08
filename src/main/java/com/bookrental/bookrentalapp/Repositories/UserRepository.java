@@ -10,8 +10,12 @@ import com.bookrental.bookrentalapp.Models.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User,Long> {
-    Optional<User> findByEmail(String email);
-    boolean existsByEmail(String email);
-    Optional<User> findByuserName(String username);
 
+    Optional<User> findByEmail(String email);
+
+    boolean existsByEmail(String email);
+    
+    Optional<User> findByuserName(String username); 
+    
+    Boolean existsByuserName(String username);
 }
